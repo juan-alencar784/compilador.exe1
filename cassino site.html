@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cassino Virtual - Aviator & Corrida de Cavalos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .balance-section {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #ffd700;
+        }
+
+        .balance-info {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .balance-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            min-width: 150px;
+        }
+
+        .balance-label {
+            font-size: 1.1em;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .balance-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .profit {
+            color: #4caf50;
+        }
+
+        .loss {
+            color: #f44336;
+        }
+
+        .neutral {
+            color: #ffd700;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .game-card {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            border-color: #ffd700;
+        }
+
+        .game-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #ffd700;
+        }
+
+        .game-content {
+            text-align: center;
+        }
+
+        .multiplier {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #ff6b6b;
+        }
+
+        .input-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: white;
+            font-size: 1em;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-start {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            color: white;
+        }
+
+        .btn-stop {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+        .btn-horse {
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            color: #1a1a2e;
+            font-size: 1em;
+            padding: 10px 20px;
+        }
+
+        .btn-horse.selected {
+            background: linear-gradient(45deg, #4caf50, #45a049);
+            color: white;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .race-track {
+            background: #2d5016;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .horse {
+            position: relative;
+            height: 40px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .horse-icon {
+            position: absolute;
+            font-size: 2em;
+            transition: left 0.1s linear;
+            left: 0;
+        }
+
+        .horse-name {
+            color: white;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .finish-line {
+            position: absolute;
+            right: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: repeating-linear-gradient(
+                0deg,
+                white,
+                white 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+
+        .history-section {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-status {
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎰 Cassino Virtual 🎰</h1>
+            <p>Jogue com responsabilidade - Apenas para diversão</p>
+        </header>
+
+        <div class="balance-section">
+            <div class="balance-info">
+                <div class="balance-item">
+                    <div class="balance-label">💰 Saldo Inicial</div>
+                    <div class="balance-value neutral">R$ <span id="initialBalance">1000</span></div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">📈 Lucro Total</div>
+                    <div class="balance-value profit">R$ <span id="totalProfit">0</span></div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">📉 Perda Total</div>
+                    <div class="balance-value loss">R$ <span id="totalLoss">0</span></div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">💵 Saldo Atual</div>
+                    <div class="balance-value" id="currentBalance" style="color: #ffd700;">R$ 1000</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="games-grid">
+            <!-- Jogo do Avião -->
+            <div class="game-card">
+                <div class="game-title">✈️ Aviator</div>
+                <div class="game-content">
+                    <div class="multiplier" id="multiplier">1.00x</div>
+                    <div id="aviatorStatus" class="game-status"></div>
+                    
+                    <div class="input-group">
+                        <label>Valor da Aposta (R$)</label>
+                        <input type="number" id="aviatorBet" value="50" min="1" max="1000">
+                    </div>
+                    
+                    <button class="btn btn-start" id="startAviator">🎮 Iniciar Jogo</button>
+                    <button class="btn btn-stop" id="stopAviator" disabled>🛑 Parar e Coletar</button>
+                    
+                    <div style="margin-top: 15px; font-size: 0.9em; color: #ccc;">
+                        <p>O multiplicador sobe a cada segundo. Pare antes que o avião caia!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Corrida de Cavalos -->
+            <div class="game-card">
+                <div class="game-title">🐎 Corrida de Cavalos</div>
+                <div class="game-content">
+                    <div class="race-track" id="raceTrack">
+                        <div class="finish-line"></div>
+                        <div class="horse">
+                            <span class="horse-icon" id="horse1" style="top: 0;">🐴</span>
+                            <span class="horse-name">Cavalo 1 - Relâmpago</span>
+                        </div>
+                        <div class="horse">
+                            <span class="horse-icon" id="horse2" style="top: 50px;">🐎</span>
+                            <span class="horse-name">Cavalo 2 - Tornado</span>
+                        </div>
+                        <div class="horse">
+                            <span class="horse-icon" id="horse3" style="top: 100px;">🦄</span>
+                            <span class="horse-name">Cavalo 3 - Tempestade</span>
+                        </div>
+                        <div class="horse">
+                            <span class="horse-icon" id="horse4" style="top: 150px;">🏇</span>
+                            <span class="horse-name">Cavalo 4 - Furacão</span>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Escolha seu cavalo:</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                            <button class="btn btn-horse horse-select" data-horse="1">🐴 Relâmpago</button>
+                            <button class="btn btn-horse horse-select" data-horse="2">🐎 Tornado</button>
+                            <button class="btn btn-horse horse-select" data-horse="3">🦄 Tempestade</button>
+                            <button class="btn btn-horse horse-select" data-horse="4">🏇 Furacão</button>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Valor da Aposta (R$)</label>
+                        <input type="number" id="horseBet" value="50" min="1" max="1000">
+                    </div>
+                    
+                    <button class="btn btn-start" id="startRace">🏁 Iniciar Corrida</button>
+                    <div id="raceStatus" class="game-status"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h3>📋 Histórico de Jogadas</h3>
+            <div class="history-list" id="historyList">
+                <div class="history-item" style="color: #ccc;">
+                    Nenhuma jogada realizada ainda
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado do jogo
+        let gameState = {
+            initialBalance: 1000,
+            currentBalance: 1000,
+            totalProfit: 0,
+            totalLoss: 0,
+            history: [],
+            aviatorActive: false,
+            aviatorInterval: null,
+            aviatorMultiplier: 1.00,
+            selectedHorse: null,
+            raceActive: false
+        };
+
+        // Atualizar interface
+        function updateUI() {
+            document.getElementById('initialBalance').textContent = gameState.initialBalance;
+            document.getElementById('totalProfit').textContent = gameState.totalProfit.toFixed(2);
+            document.getElementById('totalLoss').textContent = gameState.totalLoss.toFixed(2);
+            document.getElementById('currentBalance').textContent = gameState.currentBalance.toFixed(2);
+            
+            const currentBalanceElement = document.getElementById('currentBalance');
+            if (gameState.currentBalance > gameState.initialBalance) {
+                currentBalanceElement.style.color = '#4caf50';
+            } else if (gameState.currentBalance < gameState.initialBalance) {
+                currentBalanceElement.style.color = '#f44336';
+            } else {
+                currentBalanceElement.style.color = '#ffd700';
+            }
+        }
+
+        // Adicionar ao histórico
+        function addToHistory(game, bet, result, amount) {
+            const historyList = document.getElementById('historyList');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            
+            historyItem.innerHTML = `
+                <span>${time} - ${game}</span>
+                <span>Aposta: R$ ${bet}</span>
+                <span>Resultado: ${result}</span>
+                <span style="color: ${amount > 0 ? '#4caf50' : '#f44336'}">
+                    ${amount > 0 ? '+' : ''}R$ ${amount.toFixed(2)}
+                </span>
+            `;
+            
+            if (historyList.children.length === 1 && historyList.children[0].textContent.includes('Nenhuma jogada')) {
+                historyList.innerHTML = '';
+            }
+            
+            historyList.insertBefore(historyItem, historyList.firstChild);
+            
+            // Manter apenas últimos 10 itens
+            while (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+
+        // Jogo do Avião
+        document.getElementById('startAviator').addEventListener('click', function() {
+            if (gameState.aviatorActive) return;
+            
+            const bet = parseFloat(document.getElementById('aviatorBet').value);
+            
+            if (isNaN(bet) || bet < 1) {
+                alert('Por favor, insira um valor de aposta válido!');
+                return;
+            }
+            
+            if (bet > gameState.currentBalance) {
+                alert('Saldo insuficiente!');
+                return;
+            }
+            
+            // Iniciar jogo
+            gameState.currentBalance -= bet;
+            gameState.totalLoss += bet;
+            gameState.aviatorActive = true;
+            gameState.aviatorMultiplier = 1.00;
+            
+            document.getElementById('startAviator').disabled = true;
+            document.getElementById('stopAviator').disabled = false;
+            document.getElementById('aviatorBet').disabled = true;
+            document.getElementById('multiplier').textContent = '1.00x';
+            
+            const statusElement = document.getElementById('aviatorStatus');
+            statusElement.style.display = 'block';
+            statusElement.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
+            statusElement.textContent = '🟢 Avião decolando... Clique em PARAR para coletar!';
+            
+            updateUI();
+            
+            // Determinar quando o avião vai cair (multiplicador aleatório entre 1.1 e 10)
+            const crashPoint = (Math.random() * 9 + 1.1).toFixed(2);
+            let currentMultiplier = 1.00;
+            
+            gameState.aviatorInterval = setInterval(() => {
+                currentMultiplier += 0.01;
+                gameState.aviatorMultiplier = currentMultiplier;
+                document.getElementById('multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
+                
+                if (currentMultiplier >= crashPoint) {
+                    clearInterval(gameState.aviatorInterval);
+                    gameState.aviatorActive = false;
+                    
+                    document.getElementById('startAviator').disabled = false;
+                    document.getElementById('stopAviator').disabled = true;
+                    document.getElementById('aviatorBet').disabled = false;
+                    
+                    statusElement.style.backgroundColor = 'rgba(244, 67, 54, 0.3)';
+                    statusElement.textContent = '💥 Avião caiu! Você perdeu R$ ' + bet.toFixed(2);
+                    
+                    addToHistory('Aviator', bet.toFixed(2), 'Perdeu (Caiu em ' + crashPoint + 'x)', -bet);
+                    updateUI();
+                }
+            }, 100);
+        });
+
+        document.getElementById('stopAviator').addEventListener('click', function() {
+            if (!gameState.aviatorActive) return;
+            
+            clearInterval(gameState.aviatorInterval);
+            gameState.aviatorActive = false;
+            
+            const bet = parseFloat(document.getElementById('aviatorBet').value);
+            const winAmount = bet * gameState.aviatorMultiplier;
+            const profit = winAmount - bet;
+            
+            gameState.currentBalance += winAmount;
+            gameState.totalLoss -= bet;
+            gameState.totalProfit += profit;
+            
+            document.getElementById('startAviator').disabled = false;
+            document.getElementById('stopAviator').disabled = true;
+            document.getElementById('aviatorBet').disabled = false;
+            
+            const statusElement = document.getElementById('aviatorStatus');
+            statusElement.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
+            statusElement.textContent = '✅ Coletado! Você ganhou R$ ' + profit.toFixed(2);
+            
+            addToHistory('Aviator', bet.toFixed(2), 
+                'Ganhou (' + gameState.aviatorMultiplier.toFixed(2) + 'x)', profit);
+            updateUI();
+        });
+
+        // Corrida de Cavalos
+        document.querySelectorAll('.horse-select').forEach(button => {
+            button.addEventListener('click', function() {
+                if (gameState.raceActive) return;
+                
+                document.querySelectorAll('.horse-select').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                this.classList.add('selected');
+                gameState.selectedHorse = parseInt(this.dataset.horse);
+            });
+        });
+
+        document.getElementById('startRace').addEventListener('click', function() {
+            if (gameState.raceActive) return;
+            
+            if (!gameState.selectedHorse) {
+                alert('Por favor, selecione um cavalo primeiro!');
+                return;
+            }
+            
+            const bet = parseFloat(document.getElementById('horseBet').value);
+            
+            if (isNaN(bet) || bet < 1) {
+                alert('Por favor, insira um valor de aposta válido!');
+                return;
+            }
+            
+            if (bet > gameState.currentBalance) {
+                alert('Saldo insuficiente!');
+                return;
+            }
+            
+            // Iniciar corrida
+            gameState.currentBalance -= bet;
+            gameState.totalLoss += bet;
+            gameState.raceActive = true;
+            
+            document.getElementById('startRace').disabled = true;
+            document.querySelectorAll('.horse-select').forEach(btn => btn.disabled = true);
+            document.getElementById('horseBet').disabled = true;
+            
+            const statusElement = document.getElementById('raceStatus');
+            statusElement.style.display = 'block';
+            statusElement.style.backgroundColor = 'rgba(255, 215, 0, 0.3)';
+            statusElement.textContent = '🏁 Corrida em andamento...';
+            
+            updateUI();
+            
+            // Resetar posições dos cavalos
+            const horses = [1, 2, 3, 4];
+            horses.forEach(id => {
+                document.getElementById('horse' + id).style.left = '0px';
+            });
+            
+            // Determinar velocidades dos cavalos (mais aleatório)
+            const speeds = {};
+            horses.forEach(id => {
+                speeds[id] = Math.random() * 2 + 1; // Velocidade entre 1 e 3
+            });
+            
+            // Dar vantagem para o cavalo selecionado (mas não garantia)
+            speeds[gameState.selectedHorse] += Math.random() * 1;
+            
+            const trackWidth = document.getElementById('raceTrack').offsetWidth - 60;
+            const raceInterval = setInterval(() => {
+                let raceFinished = false;
+                let winner = null;
+                
+                horses.forEach(id => {
+                    const horse = document.getElementById('horse' + id);
+                    const currentLeft = parseInt(horse.style.left || 0);
+                    const newLeft = currentLeft + speeds[id];
+                    
+                    horse.style.left = newLeft + 'px';
+                    
+                    if (newLeft >= trackWidth && !raceFinished) {
+                        raceFinished = true;
+                        winner = id;
+                    }
+                });
+                
+                if (raceFinished) {
+                    clearInterval(raceInterval);
+                    gameState.raceActive = false;
+                    
+                    document.getElementById('startRace').disabled = false;
+                    document.querySelectorAll('.horse-select').forEach(btn => btn.disabled = false);
+                    document.getElementById('horseBet').disabled = false;
+                    
+                    if (winner === gameState.selectedHorse) {
+                        const winAmount = bet * 3; // Paga 3x
+                        const profit = winAmount - bet;
+                        
+                        gameState.currentBalance += winAmount;
+                        gameState.totalLoss -= bet;
+                        gameState.totalProfit += profit;
+                        
+                        statusElement.style.backgroundColor = 'rgba(76, 175, 80, 0.3)';
+                        statusElement.textContent = '🎉 Seu cavalo venceu! Você ganhou R$ ' + profit.toFixed(2);
+                        
+                        addToHistory('Corrida de Cavalos', bet.toFixed(2), 
+                            'Ganhou (Cavalo ' + winner + ')', profit);
+                    } else {
+                        statusElement.style.backgroundColor = 'rgba(244, 67, 54, 0.3)';
+                        statusElement.textContent = '😞 Cavalo ' + winner + ' venceu. Você perdeu R$ ' + bet.toFixed(2);
+                        
+                        addToHistory('Corrida de Cavalos', bet.toFixed(2), 
+                            'Perdeu (Cavalo ' + winner + ' venceu)', -bet);
+                    }
+                    
+                    updateUI();
+                    
+                    // Resetar posições após 2 segundos
+                    setTimeout(() => {
+                        horses.forEach(id => {
+                            document.getElementById('horse' + id).style.left = '0px';
+                        });
+                        statusElement.style.display = 'none';
+                    }, 2000);
+                }
+            }, 50);
+        });
+
+        // Inicializar
+        updateUI();
+    </script>
+</body>
+</html>
